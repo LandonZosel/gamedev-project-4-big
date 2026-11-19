@@ -14,6 +14,9 @@ tile_data = PackedInt32Array(0, 262144, 3, 65536, 262144, 4)
 [sub_resource type="TileMapPattern" id="TileMapPattern_1ffhv"]
 tile_data = PackedInt32Array(0, 0, 3, 65536, 0, 4)
 
+[sub_resource type="TileMapPattern" id="TileMapPattern_jeh1s"]
+tile_data = PackedInt32Array(0, 65536, 5)
+
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_k8dc1"]
 texture = ExtResource("1_pxeni")
 0:0/0 = 0
@@ -852,3 +855,4 @@ pattern_0 = SubResource("TileMapPattern_pxeni")
 pattern_1 = SubResource("TileMapPattern_k8dc1")
 pattern_2 = SubResource("TileMapPattern_3fp3q")
 pattern_3 = SubResource("TileMapPattern_1ffhv")
+pattern_4 = SubResource("TileMapPattern_jeh1s")

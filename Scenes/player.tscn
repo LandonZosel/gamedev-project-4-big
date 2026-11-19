@@ -1,17 +1,273 @@
 [gd_scene format=3 uid="uid://cykpwq6v24t4g"]
 
 [ext_resource type="Script" uid="uid://cw6fwo5sltu0f" path="res://Scripts/player.gd" id="1_cvnsp"]
-[ext_resource type="Texture2D" uid="uid://76tjmgwgmvg3" path="res://Sprites/Custom/player_temp.png" id="1_v0iea"]
+[ext_resource type="Texture2D" uid="uid://bfeqm06gucy15" path="res://Sprites/Custom/cape_guy.png" id="2_fkybt"]
+[ext_resource type="Texture2D" uid="uid://b38b6pj8hx3" path="res://Sprites/Custom/arm.png" id="3_vgqql"]
+[ext_resource type="Texture2D" uid="uid://cfdy0pmi6tvmj" path="res://Sprites/Custom/cape_guy_walk/cape_guy_walk_1.png" id="4_3smsa"]
+[ext_resource type="Texture2D" uid="uid://blj2nc6y8ndbs" path="res://Sprites/Custom/cape_guy_fall/cape_guy_fall_1.png" id="4_l6n3p"]
+[ext_resource type="Texture2D" uid="uid://v3uo3glflcb3" path="res://Sprites/Custom/cape_guy_walk/cape_guy_walk_2.png" id="5_8erm5"]
+[ext_resource type="Texture2D" uid="uid://cxfyosf0ljvx1" path="res://Sprites/Custom/cape_guy_fall/cape_guy_fall_2.png" id="5_olqyp"]
+[ext_resource type="Texture2D" uid="uid://csbquwo4wsoh8" path="res://Sprites/Custom/cape_guy_fall/cape_guy_fall_3.png" id="6_wpjfl"]
+[ext_resource type="Texture2D" uid="uid://cml2nh81ouolq" path="res://Sprites/Custom/cape_guy_jump/cape_guy_jump_1.png" id="7_bi64h"]
+[ext_resource type="Texture2D" uid="uid://dfyu6kxsoyfqo" path="res://Sprites/Custom/cape_guy_jump/cape_guy_jump_2.png" id="8_2ijsl"]
+[ext_resource type="Texture2D" uid="uid://d0snocuryceis" path="res://Sprites/Custom/cape_guy_jump/cape_guy_jump_3.png" id="9_p1odr"]
+[ext_resource type="Texture2D" uid="uid://dcvluv6jx8wdr" path="res://Sprites/Custom/cape_guy_jump/cape_guy_jump_4.png" id="10_0gysh"]
+[ext_resource type="Texture2D" uid="uid://dog6bg7uu7y7k" path="res://Sprites/Custom/cape_guy_land/cape_guy_land_1.png" id="11_vfarp"]
+[ext_resource type="Texture2D" uid="uid://dvl4ldspq37u2" path="res://Sprites/Custom/cape_guy_land/cape_guy_land_2.png" id="12_y6uwr"]
+[ext_resource type="Texture2D" uid="uid://bic5mmyj2pbnm" path="res://Sprites/Custom/cape_guy_start_fall/cape_guy_start_fall_1.png" id="13_83xs0"]
+[ext_resource type="Texture2D" uid="uid://0sabrhoejpys" path="res://Sprites/Custom/cape_guy_start_fall/cape_guy_start_fall_2.png" id="14_ypfnu"]
+[ext_resource type="Texture2D" uid="uid://jmo40kgueur0" path="res://Sprites/Custom/cape_guy_start_fall/cape_guy_start_fall_3.png" id="15_xuaoq"]
+[ext_resource type="Texture2D" uid="uid://doch4sjkfqlfd" path="res://Sprites/Custom/cape_guy_start_fall/cape_guy_start_fall_4.png" id="16_wohnl"]
+[ext_resource type="Texture2D" uid="uid://b730mmjk0j5qf" path="res://Sprites/Custom/cape_guy_start_fall/cape_guy_start_fall_5.png" id="17_36dho"]
+[ext_resource type="Texture2D" uid="uid://7gauew7nkumq" path="res://Sprites/Custom/cape_guy_start_jump/cape_guy_start_jump_1.png" id="18_yh6i2"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_vs0ra"]
 radius = 8.0
 height = 32.0
 
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_pimxd"]
+radius = 8.0
+height = 32.0
+
+[sub_resource type="Animation" id="Animation_gymyn"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Body:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("2_fkybt")]
+}
+
+[sub_resource type="Animation" id="Animation_fkybt"]
+resource_name = "fall"
+length = 0.3
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Body:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [ExtResource("4_l6n3p"), ExtResource("5_olqyp"), ExtResource("6_wpjfl")]
+}
+
+[sub_resource type="Animation" id="Animation_3smsa"]
+resource_name = "idle"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Body:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("2_fkybt")]
+}
+
+[sub_resource type="Animation" id="Animation_nv4vc"]
+resource_name = "jump"
+length = 0.39999999999999997
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Body:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("7_bi64h"), ExtResource("8_2ijsl"), ExtResource("9_p1odr"), ExtResource("10_0gysh")]
+}
+
+[sub_resource type="Animation" id="Animation_8gxox"]
+resource_name = "land"
+length = 0.19999999999999998
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Body:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [ExtResource("11_vfarp"), ExtResource("12_y6uwr")]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.2),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"_land_started"
+}]
+}
+
+[sub_resource type="Animation" id="Animation_11gg7"]
+resource_name = "start_fall"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Body:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("13_83xs0"), ExtResource("14_ypfnu"), ExtResource("15_xuaoq"), ExtResource("16_wohnl"), ExtResource("17_36dho")]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.5),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"_fall_started"
+}]
+}
+
+[sub_resource type="Animation" id="Animation_qpa8y"]
+resource_name = "start_jump"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Body:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("18_yh6i2")]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.1),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"_jump_started"
+}]
+}
+
+[sub_resource type="Animation" id="Animation_l6n3p"]
+resource_name = "start_jump_from_fall"
+length = 0.39999999999999997
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Body:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("16_wohnl"), ExtResource("15_xuaoq"), ExtResource("14_ypfnu"), ExtResource("13_83xs0")]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.4),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"_jump_started"
+}]
+}
+
+[sub_resource type="Animation" id="Animation_pu2lt"]
+resource_name = "walk"
+length = 0.19999999999999998
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Body:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.099999994),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [ExtResource("4_3smsa"), ExtResource("5_8erm5")]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_ukyrk"]
+_data = {
+&"RESET": SubResource("Animation_gymyn"),
+&"fall": SubResource("Animation_fkybt"),
+&"idle": SubResource("Animation_3smsa"),
+&"jump": SubResource("Animation_nv4vc"),
+&"land": SubResource("Animation_8gxox"),
+&"start_fall": SubResource("Animation_11gg7"),
+&"start_jump": SubResource("Animation_qpa8y"),
+&"start_jump_from_fall": SubResource("Animation_l6n3p"),
+&"walk": SubResource("Animation_pu2lt")
+}
+
 [node name="Player" type="CharacterBody2D" unique_id=987815235]
 script = ExtResource("1_cvnsp")
 
-[node name="Sprite" type="Sprite2D" parent="." unique_id=1830310973]
-texture = ExtResource("1_v0iea")
+[node name="Body" type="Sprite2D" parent="." unique_id=1830310973]
+texture = ExtResource("2_fkybt")
 
-[node name="Hitbox" type="CollisionShape2D" parent="." unique_id=1073410532]
+[node name="Arm" type="Sprite2D" parent="." unique_id=864979941]
+position = Vector2(5, -2)
+texture = ExtResource("3_vgqql")
+offset = Vector2(-5, 2)
+
+[node name="Arm_Pivot" type="Node2D" parent="." unique_id=2025292784]
+
+[node name="Physics Hitbox" type="CollisionShape2D" parent="." unique_id=1073410532]
+visible = false
 shape = SubResource("CapsuleShape2D_vs0ra")
+
+[node name="Detection Hitbox" type="Area2D" parent="." unique_id=2104603253]
+visible = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Detection Hitbox" unique_id=431773279]
+shape = SubResource("CapsuleShape2D_pimxd")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1849173778]
+libraries/ = SubResource("AnimationLibrary_ukyrk")
+
+[connection signal="area_entered" from="Detection Hitbox" to="." method="_on_detection_hitbox_area_entered"]
+[connection signal="area_exited" from="Detection Hitbox" to="." method="_on_detection_hitbox_area_exited"]
