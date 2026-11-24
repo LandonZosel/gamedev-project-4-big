@@ -56,14 +56,6 @@ func _process(_delta):
 	
 
 func _physics_process(delta: float) -> void:
-	# handle movement
-	move_input = Input.get_axis("Left", "Right")
-	if is_on_floor():
-		if move_input != 0:
-			velocity.x = lerp(velocity.x, move_input * move_speed, acceleration * delta)
-		else:
-			velocity.x = lerp(velocity.x, 0.0, braking * delta)
-	
 	# handle jump
 	if Input.is_action_pressed("Jump") and is_on_floor():
 		velocity.y = -jump_force
@@ -78,23 +70,35 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("Push"):
 		priority_action = Action.Push
 	
-	# handle pull
+	move_input = Input.get_axis("Left", "Right")
+	
+	#handle pull, push, and regular movement
 	if Input.is_action_pressed("Pull") && current_target && priority_action == Action.Pull:
+		# handle pull
 		var distance = global_position.distance_to(current_target.global_position)
 		if distance < 500:
 			distance -= 100
 			var distance_mult = 1 - (distance / 400)
 			var direction = global_position.direction_to(current_target.global_position)
 			velocity += direction * 1500 * distance_mult * delta
-	
-	# handle push
-	if Input.is_action_pressed("Push") && current_target && priority_action == Action.Push:
+	elif Input.is_action_pressed("Push") && current_target && priority_action == Action.Push:
+		# handle push
 		var distance = global_position.distance_to(current_target.global_position)
 		if distance < 500:
 			distance -= 100
 			var distance_mult = 1 - (distance / 400)
 			var direction = global_position.direction_to(current_target.global_position)
 			velocity -= direction * 1500 * distance_mult * delta
+	else:
+		# handle movement
+		if is_on_floor():
+			if move_input != 0:
+				velocity.x = lerp(velocity.x, move_input * move_speed, acceleration * delta)
+			else:
+				velocity.x = lerp(velocity.x, 0.0, braking * delta)
+		else:
+			if ((velocity.x > move_input * move_speed && move_input == -1) || (velocity.x < move_input * move_speed && move_input == 1)):
+				velocity.x += move_input * move_speed * 0.1
 	
 	velocity = velocity.limit_length(500)
 	

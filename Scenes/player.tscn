@@ -78,7 +78,7 @@ tracks/0/keys = {
 
 [sub_resource type="Animation" id="Animation_nv4vc"]
 resource_name = "jump"
-length = 0.39999999999999997
+length = 0.4
 loop_mode = 1
 tracks/0/type = "value"
 tracks/0/imported = false
@@ -95,7 +95,7 @@ tracks/0/keys = {
 
 [sub_resource type="Animation" id="Animation_8gxox"]
 resource_name = "land"
-length = 0.19999999999999998
+length = 0.2
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -185,7 +185,7 @@ tracks/1/keys = {
 
 [sub_resource type="Animation" id="Animation_l6n3p"]
 resource_name = "start_jump_from_fall"
-length = 0.39999999999999997
+length = 0.4
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -215,7 +215,7 @@ tracks/1/keys = {
 
 [sub_resource type="Animation" id="Animation_pu2lt"]
 resource_name = "walk"
-length = 0.19999999999999998
+length = 0.2
 loop_mode = 1
 tracks/0/type = "value"
 tracks/0/imported = false
