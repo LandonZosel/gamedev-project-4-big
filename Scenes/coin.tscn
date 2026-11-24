@@ -1,14 +1,27 @@
 [gd_scene format=3 uid="uid://cumy4echowl3m"]
 
 [ext_resource type="Texture2D" uid="uid://h0r1glyst5vm" path="res://Sprites/Custom/coin_temp.png" id="1_2qo34"]
+[ext_resource type="Script" uid="uid://dl0ji0ul40aup" path="res://Scripts/coin.gd" id="1_jgi06"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_vs0ra"]
 radius = 300.0
 
-[node name="Coin" type="Area2D" unique_id=1704083702]
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_vs0ra"]
+radius = 2.0
+height = 6.0
+
+[node name="Coin" type="CharacterBody2D" unique_id=954790266]
+collision_layer = 4
+script = ExtResource("1_jgi06")
+
+[node name="DetectionArea" type="Area2D" parent="." unique_id=1704083702]
+
+[node name="Area" type="CollisionShape2D" parent="DetectionArea" unique_id=1150060948]
+shape = SubResource("CircleShape2D_vs0ra")
 
 [node name="Sprite" type="Sprite2D" parent="." unique_id=2126405980]
 texture = ExtResource("1_2qo34")
 
-[node name="Area" type="CollisionShape2D" parent="." unique_id=1150060948]
-shape = SubResource("CircleShape2D_vs0ra")
+[node name="Hitbox" type="CollisionShape2D" parent="." unique_id=1632154788]
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_vs0ra")

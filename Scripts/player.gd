@@ -9,16 +9,20 @@ extends CharacterBody2D
 @export var acceleration : float = 50
 @export var braking : float = 15
 @export var jump_force : float = 300
+@export var shoot_speed : float = 600
 @export var gravity : float = 980
 
 var move_input : float
-var targets : Array[Area2D] = []
-var current_target : Area2D = null
+var targets : Array[Node2D] = []
+var shot_coins : Array[CharacterBody2D] = []
+var current_target : Node2D = null
 var priority_action : Action
 var jump_started : bool = false
 var fall_started : bool = false
 var land_started : bool = true
 var previously_falling : bool = false
+
+const coin_scene = preload("res://Scenes/coin.tscn")
 
 enum Action {Pull, Push}
 
@@ -75,15 +79,26 @@ func _physics_process(delta: float) -> void:
 	if is_on_floor():
 		velocity.x = lerp(velocity.x, 0.0, braking * delta)
 	
+	var moving_self = true
+	
 	#handle pull, push, and regular movement
 	if Input.is_action_pressed("Pull") && current_target && priority_action == Action.Pull:
 		# handle pull
 		var distance = global_position.distance_to(current_target.global_position)
-		if distance < 500:
+		if distance < 5 && current_target is CharacterBody2D:
+			current_target.velocity = Vector2.ZERO
+		elif distance < 500:
 			distance -= 100
 			var distance_mult = 1 - (distance / 400)
 			var direction = global_position.direction_to(current_target.global_position)
-			velocity += direction * 1500 * distance_mult * delta
+			if current_target is CharacterBody2D:
+				moving_self = _colliding_with_wall(current_target.velocity - direction * 1500 * distance_mult * delta, delta, current_target)
+				if moving_self:
+					velocity += direction * 1500 * distance_mult * delta
+				else:
+					current_target.velocity -= direction * 1500 * distance_mult * delta
+			else:
+				velocity += direction * 1500 * distance_mult * delta
 	elif Input.is_action_pressed("Push") && current_target && priority_action == Action.Push:
 		# handle push
 		var distance = global_position.distance_to(current_target.global_position)
@@ -91,7 +106,14 @@ func _physics_process(delta: float) -> void:
 			distance -= 100
 			var distance_mult = 1 - (distance / 400)
 			var direction = global_position.direction_to(current_target.global_position)
-			velocity -= direction * 1500 * distance_mult * delta
+			if current_target is CharacterBody2D:
+				moving_self = _colliding_with_wall(current_target.velocity + direction * 1500 * distance_mult * delta, delta, current_target)
+				if moving_self:
+					velocity -= direction * 1500 * distance_mult * delta
+				else:
+					current_target.velocity += direction * 1500 * distance_mult * delta
+			else:
+				velocity -= direction * 1500 * distance_mult * delta
 	else:
 		# handle movement
 		if is_on_floor():
@@ -106,8 +128,12 @@ func _physics_process(delta: float) -> void:
 	velocity = velocity.limit_length(500)
 	
 	# handle gravity
-	if not is_on_floor() && ((!Input.is_action_pressed("Pull") || priority_action != Action.Pull) || !current_target) && ((!Input.is_action_pressed("Push") || priority_action != Action.Push) || !current_target):
+	if not is_on_floor() && ((!Input.is_action_pressed("Pull") || priority_action != Action.Pull) || !current_target || !moving_self) && ((!Input.is_action_pressed("Push") || priority_action != Action.Push) || !current_target || !moving_self):
 		velocity.y += 980 * delta
+	
+	# handle shoot coin
+	if Input.is_action_just_pressed("Shoot"):
+		_shoot_coin();
 	
 	move_and_slide()
 	
@@ -170,13 +196,47 @@ func _get_best_target():
 			best_alignment = alignment
 	return best_target
 
+func _colliding_with_wall(test_velocity: Vector2, delta: float, target: CharacterBody2D) -> bool:
+	var motion := test_velocity * delta
+	var collision := target.move_and_collide(motion, true)
+	
+	if collision == null:
+		return false
+	else:
+		return true
+
+func _shoot_coin():
+	# spawn coin
+	var coin = coin_scene.instantiate()
+	if (shot_coins.size() < 3):
+		shot_coins.append(coin)
+	else:
+		var coin_to_remove = shot_coins.pop_at(0)
+		coin_to_remove.queue_free()
+		shot_coins.append(coin)
+	coin.global_position = global_position
+	var mouse_position = get_global_mouse_position()
+	var mouse_dir_from_player = (mouse_position - global_position).normalized()
+	coin.velocity = mouse_dir_from_player * shoot_speed
+	get_tree().current_scene.add_child(coin)
+
 func _on_detection_hitbox_area_entered(area: Area2D) -> void:
-	targets.append(area)
+	var parent = area.get_parent()
+	if (parent is CharacterBody2D):
+		targets.append(parent)
+	else:
+		targets.append(area)
 
 func _on_detection_hitbox_area_exited(area: Area2D) -> void:
-	targets.erase(area)
-	if current_target == area:
-		current_target = null
+	var parent = area.get_parent()
+	if (parent is CharacterBody2D):
+		targets.erase(parent)
+		if current_target == parent:
+			current_target = null
+	else:
+		targets.erase(area)
+		if current_target == area:
+			current_target = null
 
 func _jump_started():
 	jump_started = true
