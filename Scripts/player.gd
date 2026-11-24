@@ -7,7 +7,7 @@ extends CharacterBody2D
 @export var move_speed : float = 120
 @export var air_move_speed : float = 20
 @export var acceleration : float = 50
-@export var braking : float = 20
+@export var braking : float = 15
 @export var jump_force : float = 300
 @export var gravity : float = 980
 
@@ -72,6 +72,9 @@ func _physics_process(delta: float) -> void:
 	
 	move_input = Input.get_axis("Left", "Right")
 	
+	if is_on_floor():
+		velocity.x = lerp(velocity.x, 0.0, braking * delta)
+	
 	#handle pull, push, and regular movement
 	if Input.is_action_pressed("Pull") && current_target && priority_action == Action.Pull:
 		# handle pull
@@ -96,9 +99,9 @@ func _physics_process(delta: float) -> void:
 				velocity.x = lerp(velocity.x, move_input * move_speed, acceleration * delta)
 			else:
 				velocity.x = lerp(velocity.x, 0.0, braking * delta)
-		else:
-			if ((velocity.x > move_input * move_speed && move_input == -1) || (velocity.x < move_input * move_speed && move_input == 1)):
-				velocity.x += move_input * move_speed * 0.1
+			
+		elif ((velocity.x > move_input * move_speed && move_input == -1) || (velocity.x < move_input * move_speed && move_input == 1)):
+			velocity.x += move_input * move_speed * 0.1
 	
 	velocity = velocity.limit_length(500)
 	
@@ -136,13 +139,21 @@ func _draw() -> void:
 	for target in targets:
 		var start := to_local(global_position)
 		var end := to_local(target.global_position)
-		var color = Color(1, 1, 1, 0.1)
+		var distance = global_position.distance_to(target.global_position)
+		
+		var color
 		if target == current_target:
-			color = Color(1, 1, 1, 0.5)
+			var transparency : float = 1 - ((distance-280)/20)
+			transparency = clampf(transparency, 0.1, 0.5)
+			color = Color(1, 1, 1, transparency) #0.5
 			if Input.is_action_pressed("Pull") && priority_action == Action.Pull:
-				color = Color(0, 0, 1, 0.5)
+				color = Color(0, 0, 1, transparency)
 			elif Input.is_action_pressed("Push") && priority_action == Action.Push:
-				color = Color(1, 0.5, 0, 0.5)
+				color = Color(1, 0.5, 0, transparency)
+		else:
+			var transparency : float = 1 - (distance/300)
+			transparency = clampf(transparency, 0, 0.1)
+			color = Color(1, 1, 1, transparency) #0.1
 		
 		draw_line(start, end, color, 1.5)
 
