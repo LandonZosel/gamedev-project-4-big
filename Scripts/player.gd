@@ -4,6 +4,7 @@ extends CharacterBody2D
 @onready var arm : Node2D = $Arm
 @onready var hand : Marker2D = $Arm/Hand
 @onready var anim_player : AnimationPlayer = $AnimationPlayer
+@onready var line_drawer: Node2D = $LineDrawer
 
 @export var move_speed : float = 120
 @export var air_move_speed : float = 20
@@ -28,6 +29,11 @@ var fall_started : bool = false
 var land_started : bool = true
 var previously_falling : bool = false
 
+var _time := 0.0
+
+func _ready() -> void:
+	line_drawer.draw.connect(_draw_lines)
+
 func _process(_delta):
 	# flip sprite to face movement direction
 	if velocity.x != 0:
@@ -38,7 +44,6 @@ func _process(_delta):
 		else:
 			arm.position.x = 5
 			arm.scale.x = 1
-	
 	
 	if Input.is_action_pressed("Pull") && current_target && priority_action == Action.Pull && !holding_coin:
 		arm.look_at(current_target.global_position)
@@ -56,7 +61,8 @@ func _process(_delta):
 		if velocity.y < 0:
 			fall_started = false
 	
-	queue_redraw()
+	_time += _delta * 6
+	line_drawer.queue_redraw()
 	_manage_animation()
 	
 
@@ -125,6 +131,7 @@ func _physics_process(delta: float) -> void:
 					allow_movement = true
 					current_target.velocity -= direction * 1500 * distance_mult * delta
 			else:
+				moving_self = true
 				velocity += direction * 1500 * distance_mult * delta
 	elif Input.is_action_pressed("Push") && current_target && priority_action == Action.Push:
 		# handle push
@@ -145,6 +152,7 @@ func _physics_process(delta: float) -> void:
 					allow_movement = true
 					current_target.velocity += direction * 1500 * distance_mult * delta
 			else:
+				moving_self = true
 				velocity -= direction * 1500 * distance_mult * delta
 	else:
 		allow_movement = true
@@ -204,12 +212,11 @@ func _manage_animation():
 			anim_player.play("idle")
 	
 
-func _draw() -> void:
+func _draw_lines() -> void:
 	for target in targets:
-		var start := to_local(hand.global_position)
-		var end := to_local(target.global_position)
+		var start := line_drawer.to_local(hand.global_position)
+		var end := line_drawer.to_local(target.global_position)
 		var distance = hand.global_position.distance_to(target.global_position)
-		
 		var color
 		if target == current_target:
 			var transparency : float = 1 - ((distance-280)/20)
@@ -217,14 +224,49 @@ func _draw() -> void:
 			color = Color(1, 1, 1, transparency) #0.5
 			if Input.is_action_pressed("Pull") && priority_action == Action.Pull:
 				color = Color(0, 0, 1, transparency)
+				line_drawer.draw_line(start, end, color, 1.5)
+				continue
 			elif Input.is_action_pressed("Push") && priority_action == Action.Push:
 				color = Color(1, 0.5, 0, transparency)
+				line_drawer.draw_line(start, end, color, 1.5)
+				continue
 		else:
 			var transparency : float = 1 - (distance/300)
 			transparency = clampf(transparency, 0, 0.1)
 			color = Color(1, 1, 1, transparency) #0.1
+			
+		var points := PackedVector2Array()
+		var delta_vec := end - start
+		var normal := Vector2(-delta_vec.y, delta_vec.x).normalized()
 		
-		draw_line(start, end, color, 1.5)
+		for i in range(80 + 1):
+			var t := float(i) / float(80)
+			var base_pt := start.lerp(end, t)
+			var taper := sin(t * PI)
+			var offset := sin(t * TAU * 3 - _time) * 4 * taper
+			points.append(base_pt + normal * offset)
+		
+		line_drawer.draw_polyline(points, color, 1.5, true)
+		
+		#var start := to_local(hand.global_position)
+		#var end := to_local(target.global_position)
+		#var distance = hand.global_position.distance_to(target.global_position)
+		#
+		#var color
+		#if target == current_target:
+			#var transparency : float = 1 - ((distance-280)/20)
+			#transparency = clampf(transparency, 0.1, 0.5)
+			#color = Color(1, 1, 1, transparency) #0.5
+			#if Input.is_action_pressed("Pull") && priority_action == Action.Pull:
+				#color = Color(0, 0, 1, transparency)
+			#elif Input.is_action_pressed("Push") && priority_action == Action.Push:
+				#color = Color(1, 0.5, 0, transparency)
+		#else:
+			#var transparency : float = 1 - (distance/300)
+			#transparency = clampf(transparency, 0, 0.1)
+			#color = Color(1, 1, 1, transparency) #0.1
+		#
+		#draw_line(start, end, color, 1.5)
 
 func _get_best_target():
 	var best_target = null
