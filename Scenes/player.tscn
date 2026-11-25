@@ -21,12 +21,15 @@
 [ext_resource type="Texture2D" uid="uid://b730mmjk0j5qf" path="res://Sprites/Custom/cape_guy_start_fall/cape_guy_start_fall_5.png" id="17_36dho"]
 [ext_resource type="Texture2D" uid="uid://7gauew7nkumq" path="res://Sprites/Custom/cape_guy_start_jump/cape_guy_start_jump_1.png" id="18_yh6i2"]
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_vs0ra"]
+radius = 2.0
+
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_vs0ra"]
-radius = 8.0
+radius = 4.0
 height = 32.0
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_pimxd"]
-radius = 8.0
+radius = 4.0
 height = 32.0
 
 [sub_resource type="Animation" id="Animation_gymyn"]
@@ -250,14 +253,25 @@ script = ExtResource("1_cvnsp")
 [node name="Body" type="Sprite2D" parent="." unique_id=1830310973]
 texture = ExtResource("2_fkybt")
 
-[node name="Arm" type="Sprite2D" parent="." unique_id=864979941]
+[node name="Arm" type="Node2D" parent="." unique_id=1888361939]
 position = Vector2(5, -2)
+
+[node name="ArmSprite" type="Sprite2D" parent="Arm" unique_id=864979941]
 texture = ExtResource("3_vgqql")
 offset = Vector2(-5, 2)
 
-[node name="Arm_Pivot" type="Node2D" parent="." unique_id=2025292784]
+[node name="Hand" type="Marker2D" parent="Arm" unique_id=1413971584]
+position = Vector2(1, 10)
 
-[node name="Physics Hitbox" type="CollisionShape2D" parent="." unique_id=1073410532]
+[node name="RemoteTransform2D" type="RemoteTransform2D" parent="Arm" unique_id=1470784462]
+position = Vector2(1, 10)
+remote_path = NodePath("../../Hand Hitbox")
+
+[node name="Hand Hitbox" type="CollisionShape2D" parent="." unique_id=276866150]
+position = Vector2(6, 8)
+shape = SubResource("CircleShape2D_vs0ra")
+
+[node name="Body Hitbox" type="CollisionShape2D" parent="." unique_id=1073410532]
 visible = false
 shape = SubResource("CapsuleShape2D_vs0ra")
 
@@ -265,6 +279,7 @@ shape = SubResource("CapsuleShape2D_vs0ra")
 visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Detection Hitbox" unique_id=431773279]
+visible = false
 shape = SubResource("CapsuleShape2D_pimxd")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1849173778]

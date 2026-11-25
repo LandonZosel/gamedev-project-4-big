@@ -8,7 +8,7 @@ radius = 300.0
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_vs0ra"]
 radius = 2.0
-height = 6.0
+height = 4.0
 
 [node name="Coin" type="CharacterBody2D" unique_id=954790266]
 collision_layer = 4
