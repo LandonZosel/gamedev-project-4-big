@@ -1,0 +1,321 @@
+extends CharacterBody2D
+
+@onready var body_sprite : Sprite2D = $Body
+@onready var arm : Node2D = $Arm
+@onready var hand : Marker2D = $Arm/Hand
+@onready var anim_player : AnimationPlayer = $AnimationPlayer
+@onready var line_drawer: Node2D = $LineDrawer
+
+@export var move_speed : float = 120
+@export var air_move_speed : float = 20
+@export var acceleration : float = 50
+@export var braking : float = 15
+@export var jump_force : float = 300
+@export var action_force : float = 1500
+@export var shoot_speed : float = 300
+@export var gravity : float = 980
+
+const Action = Enums.Action
+const State = Enums.State
+const coin_scene = preload("res://Scenes/coin.tscn")
+
+var move_input : float
+var targets : Array[Node2D] = []
+var shot_coins : Array[CharacterBody2D] = []
+var current_target : Node2D = null
+var holding_coin : bool = false
+var priority_action : Action
+var jump_started : bool = false
+var fall_started : bool = false
+var land_started : bool = true
+var previously_falling : bool = false
+var _time := 0.0
+
+func _ready() -> void:
+	line_drawer.draw.connect(_draw_lines)
+
+func _process(_delta):
+	# flip sprite to face movement direction
+	if velocity.x != 0:
+		body_sprite.flip_h = velocity.x < 0
+		if velocity.x < 0:
+			arm.position.x = -4
+		else:
+			arm.position.x = 4
+	
+	if Input.is_action_pressed("Pull") && current_target && priority_action == Action.Pull && !holding_coin:
+		arm.look_at(current_target.global_position)
+	elif Input.is_action_pressed("Push") && current_target && priority_action == Action.Push:
+		arm.look_at(current_target.global_position)
+	else:
+		arm.look_at(get_global_mouse_position())
+	arm.rotation += deg_to_rad(315)
+	
+	if jump_started:
+		if velocity.y >= 0:
+			jump_started = false
+	
+	if fall_started:
+		if velocity.y < 0:
+			fall_started = false
+	
+	_time += _delta * 4
+	line_drawer.queue_redraw()
+	_manage_animation()
+
+func _physics_process(delta: float) -> void:
+	if Input.is_action_just_released("Pull"):
+		if current_target is CharacterBody2D:
+			if holding_coin:
+				holding_coin = false
+				_launch_coin(current_target)
+			current_target.set_state(State.None)
+	if Input.is_action_just_released("Push"):
+		if current_target is CharacterBody2D:
+			if !holding_coin:
+				current_target.set_state(State.None)
+	
+	# set current target
+	if (!Input.is_action_pressed("Pull") || priority_action != Action.Pull) && (!Input.is_action_pressed("Push") || priority_action != Action.Push):
+		current_target = _get_best_target()
+	
+	# set priority
+	if Input.is_action_just_pressed("Pull"):
+		priority_action = Action.Pull
+		if current_target is CharacterBody2D:
+			current_target.set_state(State.None)
+	if Input.is_action_just_pressed("Push"):
+		priority_action = Action.Push
+		if current_target is CharacterBody2D:
+			if holding_coin:
+				holding_coin = false
+				_launch_coin(current_target)
+			current_target.set_state(State.None)
+	
+	move_input = Input.get_axis("Left", "Right")
+	
+	var moving_self = false
+	var allow_movement = false
+	var anchoring = false
+	
+	#handle pull, push, and regular movement
+	if Input.is_action_pressed("Pull") && current_target && priority_action == Action.Pull:
+		# handle pull
+		var distance = hand.global_position.distance_to(current_target.global_position)
+		if holding_coin:
+			allow_movement = true
+			current_target.velocity = Vector2.ZERO
+			current_target.global_position = hand.global_position
+		elif distance < 5 && current_target is CharacterBody2D:
+			allow_movement = true
+			holding_coin = true
+			current_target.set_state(State.Holding)
+			current_target.velocity = Vector2.ZERO
+			current_target.global_position = hand.global_position
+		elif distance < 500:
+			distance -= 100
+			var distance_mult = 1 - (distance / 400)
+			var direction = global_position.direction_to(current_target.global_position)
+			if current_target is CharacterBody2D:
+				moving_self = _colliding_with_wall(current_target.velocity - (direction * action_force * distance_mult * delta), delta, current_target)
+				if moving_self:
+					current_target.set_state(State.Anchoring)
+					anchoring = true
+					current_target.velocity = Vector2.ZERO
+					velocity += direction * action_force * distance_mult * delta
+				else:
+					current_target.set_state(State.Moving)
+					allow_movement = true
+					current_target.velocity -= direction * action_force * distance_mult * delta
+			else:
+				moving_self = true
+				velocity += direction * action_force * distance_mult * delta
+	elif Input.is_action_pressed("Push") && current_target && priority_action == Action.Push:
+		# handle push
+		var distance = hand.global_position.distance_to(current_target.global_position)
+		if distance < 500:
+			distance -= 100
+			var distance_mult = 1 - (distance / 400)
+			var direction = global_position.direction_to(current_target.global_position)
+			if current_target is CharacterBody2D:
+				moving_self = _colliding_with_wall(current_target.velocity + (direction * action_force * distance_mult * delta), delta, current_target)
+				if moving_self:
+					current_target.set_state(State.Anchoring)
+					anchoring = true
+					current_target.velocity = Vector2.ZERO
+					velocity -= direction * action_force * distance_mult * delta
+				else:
+					current_target.set_state(State.Moving)
+					allow_movement = true
+					current_target.velocity += direction * action_force * distance_mult * delta
+			else:
+				moving_self = true
+				velocity -= direction * action_force * distance_mult * delta
+	else:
+		allow_movement = true
+	
+	if allow_movement:
+		# handle jump
+		if Input.is_action_pressed("Jump") and is_on_floor():
+			velocity.y = -jump_force
+		
+		# handle movement
+		if is_on_floor():
+			if move_input != 0:
+				velocity.x = lerp(velocity.x, move_input * move_speed, acceleration * delta)
+			else:
+				velocity.x = lerp(velocity.x, 0.0, braking * delta)
+			
+		elif ((velocity.x > move_input * move_speed && move_input == -1) || (velocity.x < move_input * move_speed && move_input == 1)):
+			velocity.x += move_input * move_speed * 0.1
+	
+	if is_on_floor() && anchoring:
+		velocity.x = lerp(velocity.x, 0.0, braking * delta)
+	
+	velocity = velocity.limit_length(500)
+	
+	# handle gravity
+	if not is_on_floor() && ((!Input.is_action_pressed("Pull") || priority_action != Action.Pull) || !current_target || !moving_self) && ((!Input.is_action_pressed("Push") || priority_action != Action.Push) || !current_target || !moving_self):
+		velocity.y += 980 * delta
+	
+	# handle shoot coin
+	if Input.is_action_just_pressed("Shoot"):
+		_shoot_coin();
+	
+	move_and_collide(Vector2.ZERO)
+	move_and_slide()
+
+func _manage_animation():
+	if !is_on_floor():
+		if velocity.y < 0:
+			#if previously_falling && !jump_started:
+				#anim_player.play("start_jump_from_fall")
+			#elif !jump_started:
+				#anim_player.play("start_jump")
+			#else:
+				anim_player.play("jump")
+		else:
+			#if !fall_started:
+				#anim_player.play("start_fall")
+			#else:
+				anim_player.play("fall")
+	else:
+		#if !land_started:
+			#anim_player.play("land")
+		#elif move_input != 0:
+		if move_input != 0:
+			anim_player.play("run")
+		else:
+			anim_player.play("idle")
+
+func _draw_lines() -> void:
+	for target in targets:
+		var start := line_drawer.to_local(global_position)
+		var end := line_drawer.to_local(target.global_position)
+		var distance = global_position.distance_to(target.global_position)
+		var color
+		if target == current_target:
+			var transparency : float = 1 - ((distance-280)/20)
+			transparency = clampf(transparency, 0.2, 0.5)
+			color = Color(1, 1, 1, transparency) #0.5
+			if Input.is_action_pressed("Pull") && priority_action == Action.Pull:
+				color = Color(0, 0, 1, transparency)
+				line_drawer.draw_line(start, end, color, 1.5)
+				continue
+			elif Input.is_action_pressed("Push") && priority_action == Action.Push:
+				color = Color(1, 0.5, 0, transparency)
+				line_drawer.draw_line(start, end, color, 1.5)
+				continue
+		else:
+			var transparency : float = 1 - (distance/300)
+			transparency = clampf(transparency, 0, 0.1)
+			color = Color(1, 1, 1, transparency) #0.1
+			
+		var points := PackedVector2Array()
+		var delta_vec := end - start
+		var normal := Vector2(-delta_vec.y, delta_vec.x).normalized()
+		
+		for i in range(80 + 1):
+			var t := float(i) / float(80)
+			var base_pt := start.lerp(end, t)
+			var taper := sin(t * PI)
+			var offset := sin(t * TAU * 3 - _time) * 2 * taper
+			points.append(base_pt + normal * offset)
+		
+		line_drawer.draw_polyline(points, color, 1.5, true)
+
+func _get_best_target():
+	var best_target = null
+	var best_alignment = -1
+	var mouse_position = get_global_mouse_position()
+	var mouse_dir_from_player = (mouse_position - global_position).normalized()
+	for target in targets:
+		var target_dir_from_player = (target.global_position - global_position).normalized()
+		var alignment = mouse_dir_from_player.dot(target_dir_from_player)
+		if best_target == null || alignment > best_alignment:
+			best_target = target
+			best_alignment = alignment
+	return best_target
+
+func _colliding_with_wall(test_velocity: Vector2, delta: float, target: CharacterBody2D) -> bool:
+	if test_velocity.is_zero_approx():
+		return false
+	
+	var motion := test_velocity * delta
+	var min_distance := target.safe_margin + 0.5
+	
+	if motion.length() < min_distance:
+		motion = test_velocity.normalized() * min_distance
+	
+	return target.move_and_collide(motion, true) != null
+
+func _shoot_coin():
+	# spawn coin
+	var coin = coin_scene.instantiate()
+	if (shot_coins.size() < 3):
+		shot_coins.append(coin)
+	else:
+		var coin_to_remove = shot_coins.pop_at(0)
+		if (current_target == coin_to_remove):
+			holding_coin = false
+		coin_to_remove.queue_free()
+		shot_coins.append(coin)
+	coin.global_position = hand.global_position
+	_launch_coin(coin)
+	get_tree().current_scene.add_child(coin)
+
+func _launch_coin(coin: CharacterBody2D):
+	var mouse_position = get_global_mouse_position()
+	var mouse_dir_from_player = (mouse_position - hand.global_position).normalized()
+	coin.velocity = mouse_dir_from_player * shoot_speed
+
+func _on_detection_hitbox_area_entered(area: Area2D) -> void:
+	var parent = area.get_parent()
+	if (parent is CharacterBody2D):
+		targets.append(parent)
+	else:
+		targets.append(area)
+
+func _on_detection_hitbox_area_exited(area: Area2D) -> void:
+	var parent = area.get_parent()
+	if (parent is CharacterBody2D):
+		targets.erase(parent)
+		if current_target == parent:
+			current_target.set_state(State.None)
+			current_target = null
+	else:
+		targets.erase(area)
+		if current_target == area:
+			current_target = null
+
+func _jump_started():
+	jump_started = true
+	land_started = false
+
+func _fall_started():
+	fall_started = true
+	previously_falling = true
+
+func _land_started():
+	land_started = true
+	previously_falling = false

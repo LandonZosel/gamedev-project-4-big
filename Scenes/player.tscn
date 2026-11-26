@@ -273,7 +273,6 @@ position = Vector2(6, 8)
 shape = SubResource("CircleShape2D_vs0ra")
 
 [node name="Body Hitbox" type="CollisionShape2D" parent="." unique_id=1073410532]
-visible = false
 shape = SubResource("CapsuleShape2D_vs0ra")
 
 [node name="Detection Hitbox" type="Area2D" parent="." unique_id=2104603253]

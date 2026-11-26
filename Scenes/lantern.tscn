@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://buwvo873e5ia3"]
 
-[ext_resource type="Texture2D" uid="uid://timoencc8yqa" path="res://Sprites/Custom/lantern.png" id="1_q5ajm"]
+[ext_resource type="Texture2D" uid="uid://cxpvwb07hxbu2" path="res://Sprites/Custom/lantern2.png" id="1_q5ajm"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_vs0ra"]
 radius = 300.0
@@ -12,4 +12,5 @@ position = Vector2(0, -4)
 texture = ExtResource("1_q5ajm")
 
 [node name="Area" type="CollisionShape2D" parent="." unique_id=1673864891]
+visible = false
 shape = SubResource("CircleShape2D_vs0ra")

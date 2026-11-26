@@ -28,7 +28,6 @@ var jump_started : bool = false
 var fall_started : bool = false
 var land_started : bool = true
 var previously_falling : bool = false
-
 var _time := 0.0
 
 func _ready() -> void:
@@ -61,10 +60,9 @@ func _process(_delta):
 		if velocity.y < 0:
 			fall_started = false
 	
-	_time += _delta * 6
+	_time += _delta * 4
 	line_drawer.queue_redraw()
-	_manage_animation()
-	
+	#_manage_animation()
 
 func _physics_process(delta: float) -> void:
 	if Input.is_action_just_released("Pull"):
@@ -187,7 +185,6 @@ func _physics_process(delta: float) -> void:
 	
 	move_and_collide(Vector2.ZERO)
 	move_and_slide()
-	
 
 func _manage_animation():
 	if !is_on_floor():
@@ -210,17 +207,16 @@ func _manage_animation():
 			anim_player.play("walk")
 		else:
 			anim_player.play("idle")
-	
 
 func _draw_lines() -> void:
 	for target in targets:
-		var start := line_drawer.to_local(hand.global_position)
+		var start := line_drawer.to_local(global_position)
 		var end := line_drawer.to_local(target.global_position)
-		var distance = hand.global_position.distance_to(target.global_position)
+		var distance = global_position.distance_to(target.global_position)
 		var color
 		if target == current_target:
 			var transparency : float = 1 - ((distance-280)/20)
-			transparency = clampf(transparency, 0.1, 0.5)
+			transparency = clampf(transparency, 0.2, 0.5)
 			color = Color(1, 1, 1, transparency) #0.5
 			if Input.is_action_pressed("Pull") && priority_action == Action.Pull:
 				color = Color(0, 0, 1, transparency)
@@ -243,30 +239,10 @@ func _draw_lines() -> void:
 			var t := float(i) / float(80)
 			var base_pt := start.lerp(end, t)
 			var taper := sin(t * PI)
-			var offset := sin(t * TAU * 3 - _time) * 4 * taper
+			var offset := sin(t * TAU * 3 - _time) * 2 * taper
 			points.append(base_pt + normal * offset)
 		
 		line_drawer.draw_polyline(points, color, 1.5, true)
-		
-		#var start := to_local(hand.global_position)
-		#var end := to_local(target.global_position)
-		#var distance = hand.global_position.distance_to(target.global_position)
-		#
-		#var color
-		#if target == current_target:
-			#var transparency : float = 1 - ((distance-280)/20)
-			#transparency = clampf(transparency, 0.1, 0.5)
-			#color = Color(1, 1, 1, transparency) #0.5
-			#if Input.is_action_pressed("Pull") && priority_action == Action.Pull:
-				#color = Color(0, 0, 1, transparency)
-			#elif Input.is_action_pressed("Push") && priority_action == Action.Push:
-				#color = Color(1, 0.5, 0, transparency)
-		#else:
-			#var transparency : float = 1 - (distance/300)
-			#transparency = clampf(transparency, 0, 0.1)
-			#color = Color(1, 1, 1, transparency) #0.1
-		#
-		#draw_line(start, end, color, 1.5)
 
 func _get_best_target():
 	var best_target = null
@@ -292,18 +268,6 @@ func _colliding_with_wall(test_velocity: Vector2, delta: float, target: Characte
 		motion = test_velocity.normalized() * min_distance
 	
 	return target.move_and_collide(motion, true) != null
-	#var motion := test_velocity * delta
-	#if motion.is_zero_approx():
-		#return false
-	#
-	#if motion.length() < 2.0:
-		#motion = motion.normalized() * 1.0
-	#
-	#var collision := target.move_and_collide(motion, true)
-	#if collision == null:
-		#return false
-	#else:
-		#return true
 
 func _shoot_coin():
 	# spawn coin
