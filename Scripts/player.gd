@@ -62,7 +62,7 @@ func _process(_delta):
 	
 	_time += _delta * 4
 	line_drawer.queue_redraw()
-	#_manage_animation()
+	_manage_animation()
 
 func _physics_process(delta: float) -> void:
 	if Input.is_action_just_released("Pull"):

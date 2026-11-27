@@ -64,6 +64,9 @@ func _process(_delta):
 	_manage_animation()
 
 func _physics_process(delta: float) -> void:
+	if Input.is_action_pressed("Down") && is_on_floor():
+		position.y += 1
+	
 	if Input.is_action_just_released("Pull"):
 		if current_target is CharacterBody2D:
 			if holding_coin:

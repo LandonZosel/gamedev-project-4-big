@@ -269,6 +269,7 @@ _data = {
 z_index = 1
 scale = Vector2(1.5, 1.5)
 collision_layer = 2
+collision_mask = 9
 script = ExtResource("1_gtvwj")
 
 [node name="Body" type="Sprite2D" parent="." unique_id=1830310973]
@@ -284,12 +285,11 @@ offset = Vector2(-4, -1)
 [node name="Hand" type="Marker2D" parent="Arm" unique_id=1413971584]
 position = Vector2(2, 2)
 
-[node name="RemoteTransform2D" type="RemoteTransform2D" parent="Arm" unique_id=1470784462]
-position = Vector2(2, 2)
-remote_path = NodePath("../../Hand Hitbox")
+[node name="Hand2" type="CharacterBody2D" parent="Arm" unique_id=1314708583]
+collision_layer = 2
 
-[node name="Hand Hitbox" type="CollisionShape2D" parent="." unique_id=276866150]
-position = Vector2(6, 3)
+[node name="Hand Hitbox" type="CollisionShape2D" parent="Arm/Hand2" unique_id=276866150]
+position = Vector2(2, 2)
 shape = SubResource("CircleShape2D_vs0ra")
 
 [node name="Body Hitbox" type="CollisionShape2D" parent="." unique_id=1073410532]
